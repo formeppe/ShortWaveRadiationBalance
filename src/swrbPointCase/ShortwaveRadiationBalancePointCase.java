@@ -89,7 +89,7 @@ import com.vividsolutions.jts.geom.Point;
 @Name("shortradbal")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class ShortwaveRadiationBalance extends JGTModel {
+public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 	@Description("The Hashmap with the time series of the temperature values")
 	@In
@@ -325,18 +325,18 @@ public class ShortwaveRadiationBalance extends JGTModel {
 					calcDirectRadiation(columnStation.get(i), rowStation.get(i), demWR, shadowWR, sunVector, 
 							normalWR,E0,temperature, humidity):0;
 
-					//calculate the diffuse radiation, during the daylight
-					double diffuse =(hour > (sunrise) && hour < (sunset))?
+			//calculate the diffuse radiation, during the daylight
+			double diffuse =(hour > (sunrise) && hour < (sunset))?
 							calcDiffuseRadiation(sunVector, E0,columnStation.get(i), rowStation.get(i)):0;
 
-							// calculate the radiation at the top of the atmosphere, during the daylight
-							double topATM=(hour > (sunrise) && hour < (sunset))?
-									calcTopAtmosphere(E0, sunVector[2]):0;
+			// calculate the radiation at the top of the atmosphere, during the daylight
+			double topATM=(hour > (sunrise) && hour < (sunset))?
+							calcTopAtmosphere(E0, sunVector[2]):0;
 
 
 
-									//store the results in hashmpas
-									storeResult_series((Integer)idStations[i], direct, diffuse, topATM);
+			//store the results in hashmpas
+			storeResult_series((Integer)idStations[i], direct, diffuse, topATM);
 
 		}
 

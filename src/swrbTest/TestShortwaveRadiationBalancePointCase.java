@@ -28,7 +28,7 @@ import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 
-import swrbPointCase.ShortwaveRadiationBalance;
+import swrbPointCase.ShortwaveRadiationBalancePointCase;
 
 
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -100,7 +100,7 @@ public class TestShortwaveRadiationBalancePointCase extends HMTestCase {
 
 
 
-		ShortwaveRadiationBalance SWRBPoint = new ShortwaveRadiationBalance();
+		ShortwaveRadiationBalancePointCase SWRBPoint = new ShortwaveRadiationBalancePointCase();
 		SWRBPoint.inStations = stationsFC;
 		SWRBPoint.inDem = pit;
 		SWRBPoint.inSkyview = skyviewfactor;

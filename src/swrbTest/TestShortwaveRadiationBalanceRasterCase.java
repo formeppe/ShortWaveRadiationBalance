@@ -20,9 +20,10 @@ package swrbTest;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 
-import swrbPointCase.ShortwaveRadiationBalance;
+import swrbPointCase.ShortwaveRadiationBalancePointCase;
 import swrbRasterCase.ShortwaveRadiationBalanceRasterCase;
 
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -34,48 +35,65 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
  */
 public class TestShortwaveRadiationBalanceRasterCase extends HMTestCase {
 
-	private final static String START_DATE = "2002-01-01 07:00";
-	private final static String END_DATE = "2002-01-07 00:00";
+	private final static String START_DATE = "2002-01-01 00:00";
+	private final static String END_DATE = "2002-01-01 03:00";
+	
+	GridCoverage2D outDirectDataGrid = null;
+	GridCoverage2D outDiffuseDataGrid = null;
+	GridCoverage2D outTopATMDataGrid = null;
 
-	public void testInsolation() throws Exception {
+	public TestShortwaveRadiationBalanceRasterCase() throws Exception {
 
-		OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
-		stationsReader.file = "/Users/marialaura/Desktop/ValidationJAMILittleWashita/stazioniGIUSTE.shp";
-		stationsReader.readFeatureCollection();
-		SimpleFeatureCollection stationsFC = stationsReader.geodata;
+		String startDate = "2007-10-17 00:00" ;
 
-		OmsRasterReader reader = new OmsRasterReader();
-		reader.file = "/Users/marialaura/Desktop/LW/pit_LW.asc";
-		reader.fileNovalue = -9999.0;
-		reader.geodataNovalue = Double.NaN;
-		reader.process();
-		GridCoverage2D pit = reader.outRaster;
+		OmsRasterReader demReader = new OmsRasterReader();
+		demReader.file = "resources/Input/DEM.asc";
+		demReader.fileNovalue = -9999.0;
+		demReader.geodataNovalue = Double.NaN;
+		demReader.process();
+		GridCoverage2D dem = demReader.outRaster;
+		
+		OmsRasterReader skyViewReader = new OmsRasterReader();
+		skyViewReader.file = "resources/Input/sky.asc";
+		skyViewReader.fileNovalue = -9999.0;
+		skyViewReader.geodataNovalue = Double.NaN;
+		skyViewReader.process();
+		GridCoverage2D skyView = skyViewReader.outRaster;
+		
+		
+		ShortwaveRadiationBalanceRasterCase SWRBRaster = new ShortwaveRadiationBalanceRasterCase();
 
-		OmsRasterReader readers = new OmsRasterReader();
-		readers.file = "/Users/marialaura/Desktop/LW/sky.asc";
-		readers.fileNovalue = -9999.0;
-		readers.geodataNovalue = Double.NaN;
-		readers.process();
-		GridCoverage2D skyviewfactor = readers.outRaster;
+		SWRBRaster.inDem = dem;
+		SWRBRaster.inSkyview = skyView;
+		SWRBRaster.inTempGrid=dem;
+		SWRBRaster.inHumidityGrid=dem;
+		SWRBRaster.tStartDate = startDate;
+		SWRBRaster.timeStep="Hourly";
+		SWRBRaster.pCmO3=0.6;
+		SWRBRaster.pAlphag=0.9;
+		SWRBRaster.pVisibility=80;
+		
+		SWRBRaster.process();
+		
+		outDirectDataGrid  = SWRBRaster.outDirectGrid;
+		outDiffuseDataGrid  = SWRBRaster.outDiffuseGrid;
+		outTopATMDataGrid =SWRBRaster.outTopATMGrid;
 
-		ShortwaveRadiationBalanceRasterCase insolation = new ShortwaveRadiationBalanceRasterCase();
-		insolation.inStations = stationsFC;
-		insolation.inElev = pit;
-		insolation.inskyview = skyviewfactor;
-		insolation.tStartDate = START_DATE;
-		insolation.tEndDate = END_DATE;
-		insolation.doRaster = false;
-		insolation.fStationsid = "int_1";
-		insolation.pOutPathdiffuse = "/Users/marialaura/Desktop/DIFFUSA.csv";
-		insolation.pOutPathdiretta = "/Users/marialaura/Desktop/DIRETTA.csv";
-		insolation.pOutPathtopatm = "/Users/marialaura/Desktop/TOPATMN.csv";
-		insolation.inPathtemp = "/Users/marialaura/Desktop/ValidationJAMILittleWashita/temperature_orarie_2002_2008_NEWNEW.csv";
-		insolation.inPathhumidity = "/Users/marialaura/Desktop/ValidationJAMILittleWashita/humidity_orarie_2002_2008_NEW.csv";
-		insolation.inTimestep = 60;
+		OmsRasterWriter writerDIrectraster = new OmsRasterWriter();
+		writerDIrectraster .inRaster = outDirectDataGrid;
+		writerDIrectraster .file = "resources/Output/mapDirect.asc";
+		writerDIrectraster.process();
 
-		insolation.pm = pm;
+		OmsRasterWriter writerDiffuseraster = new OmsRasterWriter();
+		writerDiffuseraster.inRaster = outDiffuseDataGrid;
+		writerDiffuseraster.file = "resources/Output/mapDiffuse.asc";
+		writerDiffuseraster.process();
 
-		insolation.process();
+		OmsRasterWriter writerTopATMraster = new OmsRasterWriter();
+		writerTopATMraster.inRaster = outTopATMDataGrid;
+		writerTopATMraster.file = "resources/Output/mapTop.asc";
+		writerTopATMraster.process();
+
 
 	}
 
