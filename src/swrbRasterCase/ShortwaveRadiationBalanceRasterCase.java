@@ -303,10 +303,11 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 				double topATM=(hour > (sunrise) && hour < (sunset))?
 								calcTopAtmosphere(E0, sunVector[2]):0;
 								
+				double convert=(timeStep.equals("Daily"))?277.7:11.57;
 								
-				diffuseIter.setSample(c, r, 0,direct);
-				directIter.setSample(c, r, 0, diffuse);
-				topIter.setSample(c, r, 0, topATM);
+				diffuseIter.setSample(c, r, 0,direct/convert);
+				directIter.setSample(c, r, 0, diffuse/convert);
+				topIter.setSample(c, r, 0, topATM/convert);
 
 				// the index k is for the loop over the list
 				k++;
