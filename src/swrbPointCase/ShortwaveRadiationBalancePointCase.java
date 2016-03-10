@@ -334,11 +334,8 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 							calcTopAtmosphere(E0, sunVector[2]):0;
 
 
-
-			// 277.7 is to pass from MJ to W/h otherwise 11.57 is to pass from MJ to W/d
-			double convert=(timeStep.equals("Daily"))?277.7:11.57;
 			
-			storeResult_series((Integer)idStations[i], direct/ convert, diffuse/ convert, topATM/ convert);
+			storeResult_series((Integer)idStations[i], direct, diffuse, topATM);
 
 		}
 
