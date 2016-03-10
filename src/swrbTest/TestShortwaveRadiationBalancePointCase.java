@@ -106,7 +106,7 @@ public class TestShortwaveRadiationBalancePointCase extends HMTestCase {
 		SWRBPoint.inSkyview = skyviewfactor;
 		SWRBPoint.tStartDate = startDate;
 		SWRBPoint.fStationsid = "int_1";
-		SWRBPoint.timeStep="Hourly";
+		SWRBPoint.doHourly= true;
 		SWRBPoint.pCmO3=0.6;
 		SWRBPoint.pAlphag=0.9;
 		SWRBPoint.pVisibility=80;

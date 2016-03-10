@@ -68,7 +68,7 @@ public class TestShortwaveRadiationBalanceRasterCase extends HMTestCase {
 		SWRBRaster.inTempGrid=dem;
 		SWRBRaster.inHumidityGrid=dem;
 		SWRBRaster.tStartDate = startDate;
-		SWRBRaster.timeStep="Hourly";
+		SWRBRaster.doHourly=true;
 		SWRBRaster.pCmO3=0.6;
 		SWRBRaster.pAlphag=0.9;
 		SWRBRaster.pVisibility=80;

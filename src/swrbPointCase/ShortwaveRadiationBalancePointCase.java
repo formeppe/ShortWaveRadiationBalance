@@ -37,6 +37,7 @@ import java.util.Set;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION;
 
 import javax.media.jai.RasterFactory;
 import javax.media.jai.iterator.RandomIter;
@@ -132,11 +133,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	@Description("the linked HashMap with the coordinate of the stations")
 	LinkedHashMap<Integer, Coordinate> stationCoordinates;
 
-	@Description("The timeStep allows to chose between the hourly time step"
+	@Description("doHourly allows to chose between the hourly time step"
 			+ " or the daily time step. It could be: "
-			+ " Hourly or Daily")
+			+ " Hourly--> true or Daily-->false")
 	@In
-	public String timeStep;
+    public boolean doHourly;
 
 	@Description("It is needed to iterate on the date")
 	int step;
@@ -241,7 +242,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 		// otherwise it adds an hour, "step" increments at the end of the process
 		// the actual date is needed to compute the actual sunrise and sunset
 		DateTime startDateTime = formatter.parseDateTime(tStartDate);
-		DateTime date=(timeStep.equals("Daily"))?startDateTime.plusDays(step):startDateTime.plusHours(step).plusMinutes(30);
+		DateTime date=(doHourly==false)?startDateTime.plusDays(step):startDateTime.plusHours(step).plusMinutes(30);
 
 
 		//  from pixel coordinates (in coverage image) to geographic coordinates (in coverage CRS)
