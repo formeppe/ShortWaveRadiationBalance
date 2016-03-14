@@ -7,6 +7,6 @@
 	<classpathentry kind="lib" path="jar/jgt-hortonmachine-0.7.7-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="jar/jgt-modules-0.7.7-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="jar/jgt-oms3-0.7.7-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/jgt-jgrassgears/target/jgt-jgrassgears-0.7.7-SNAPSHOT-jar-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="jar/jgt-jgrassgears-0.7.7-SNAPSHOT-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
