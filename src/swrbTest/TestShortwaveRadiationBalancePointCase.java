@@ -119,6 +119,7 @@ public class TestShortwaveRadiationBalancePointCase extends HMTestCase {
 			HashMap<Integer, double[]> id2ValueMap = airTReader.outData;
 			SWRBPoint.inTemperatureValues= id2ValueMap;
 
+			
 			humidityReader.nextRecord();
 			id2ValueMap = humidityReader.outData;
 			SWRBPoint.inHumidityValues = id2ValueMap;

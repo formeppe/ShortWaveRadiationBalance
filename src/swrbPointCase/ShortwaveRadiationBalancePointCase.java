@@ -37,7 +37,6 @@ import java.util.Set;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION;
 
 import javax.media.jai.RasterFactory;
 import javax.media.jai.iterator.RandomIter;
@@ -165,6 +164,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	public double pAlphag;
 	//pAlphag = 0.9;
 
+	@Description("The temperature default value in case of missing data.")
+	@In
+	@Unit("C")
+	public double defaultTemp = 15.0;
+	
 	@Description("The solar constant")
 	private static final double SOLARCTE = 1370.0;
 	// double SOLARCTE = 1360.0;
@@ -219,15 +223,15 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 	@Description("the output hashmap withe the direct radiation")
 	@Out
-	public HashMap<Integer, double[]> outHMdirect= new HashMap<Integer, double[]>();;
+	public HashMap<Integer, double[]> outHMdirect= new HashMap<Integer, double[]>();
 
 	@Description("the output hashmap withe the diffuse radiation")
 	@Out
-	public HashMap<Integer, double[]> outHMdiffuse= new HashMap<Integer, double[]>();;
+	public HashMap<Integer, double[]> outHMdiffuse= new HashMap<Integer, double[]>();
 
 	@Description("the output hashmap withe the top atmosphere radiation")
 	@Out
-	public HashMap<Integer, double[]> outHMtopatm= new HashMap<Integer, double[]>();;
+	public HashMap<Integer, double[]> outHMtopatm= new HashMap<Integer, double[]>();
 
 
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").withZone(DateTimeZone.UTC);
@@ -298,9 +302,14 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 
 			// read the input data for the given station
-			temperature=inTemperatureValues.get(idStations[i])[0];
-			humidity=inHumidityValues.get(idStations[i])[0];
-			if(isNovalue(humidity)) humidity=pRH;
+			temperature=defaultTemp;
+			if (inTemperatureValues != null) 
+				temperature=inTemperatureValues.get(idStations[i])[0];
+			
+			humidity=pRH;
+			if (inHumidityValues != null) 
+				humidity=inHumidityValues.get(idStations[i])[0];
+
 
 			// calculating the sun vector
 			double sunVector[] = calcSunVector(latitudeStation.get(i), getHourAngle(date,latitudeStation.get(i)));
