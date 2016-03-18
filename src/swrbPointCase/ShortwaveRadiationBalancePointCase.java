@@ -239,7 +239,6 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	@Execute
 	public void process() throws Exception { 
 
-
 		// This 2 operations allow to define if we are working with daily or hourly time step
 		// if we are working with Daily time step, every time it adds to the start date a day
 		// otherwise it adds an hour, "step" increments at the end of the process
