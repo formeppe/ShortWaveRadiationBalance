@@ -136,7 +136,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 			+ " or the daily time step. It could be: "
 			+ " Hourly--> true or Daily-->false")
 	@In
-    public boolean doHourly;
+	public boolean doHourly;
 
 	@Description("It is needed to iterate on the date")
 	int step;
@@ -168,7 +168,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	@In
 	@Unit("C")
 	public double defaultTemp = 15.0;
-	
+
 	@Description("The solar constant")
 	private static final double SOLARCTE = 1370.0;
 	// double SOLARCTE = 1360.0;
@@ -305,7 +305,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 			temperature=defaultTemp;
 			if (inTemperatureValues != null) 
 				temperature=inTemperatureValues.get(idStations[i])[0];
-			
+
 			humidity=pRH;
 			if (inHumidityValues != null) 
 				humidity=inHumidityValues.get(idStations[i])[0];
@@ -335,17 +335,17 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 					calcDirectRadiation(columnStation.get(i), rowStation.get(i), demWR, shadowWR, sunVector, 
 							normalWR,E0,temperature, humidity):0;
 
-			//calculate the diffuse radiation, during the daylight
-			double diffuse =(hour > (sunrise) && hour < (sunset))?
+					//calculate the diffuse radiation, during the daylight
+					double diffuse =(hour > (sunrise) && hour < (sunset))?
 							calcDiffuseRadiation(sunVector, E0,columnStation.get(i), rowStation.get(i)):0;
 
-			// calculate the radiation at the top of the atmosphere, during the daylight
-			double topATM=(hour > (sunrise) && hour < (sunset))?
-							calcTopAtmosphere(E0, sunVector[2]):0;
+							// calculate the radiation at the top of the atmosphere, during the daylight
+							double topATM=(hour > (sunrise) && hour < (sunset))?
+									calcTopAtmosphere(E0, sunVector[2]):0;
 
 
-			
-			storeResult_series((Integer)idStations[i], direct, diffuse, topATM);
+
+									storeResult_series((Integer)idStations[i], direct, diffuse, topATM);
 
 		}
 
