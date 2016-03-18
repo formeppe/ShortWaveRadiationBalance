@@ -31,12 +31,10 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
  * Test the {@link Insolation} module.
  * 
- * @author Giuseppe Formetta
+ * @author Marialaura Bancheri
  */
 public class TestShortwaveRadiationBalanceRasterCase extends HMTestCase {
 
-	private final static String START_DATE = "2002-01-01 00:00";
-	private final static String END_DATE = "2002-01-01 03:00";
 	
 	GridCoverage2D outDirectDataGrid = null;
 	GridCoverage2D outDiffuseDataGrid = null;
