@@ -36,7 +36,6 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import javax.media.jai.RasterFactory;
 import javax.media.jai.iterator.RandomIter;
@@ -673,15 +672,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	 */
 	private void storeResult_series(int ID, double direct , double diffuse,
 			double topATM) throws SchemaException {
-
-
 		outHMdirect.put(ID, new double[]{direct});
 
 		outHMdiffuse.put(ID, new double[]{diffuse});
 
 		outHMtopatm.put(ID, new double[]{topATM});
-
-
 	}
 
 }
