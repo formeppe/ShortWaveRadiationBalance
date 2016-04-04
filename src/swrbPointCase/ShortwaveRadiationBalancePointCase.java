@@ -605,8 +605,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 		In=0.9571*SOLARCTE*E0*(tau_r * tau_o * tau_g * tau_w * tau_a + beta_s);
 
 		double S_incident=In* cos_inc * shadowWR.getSampleDouble(i, j, 0);
+		
+		S_incident=(S_incident>3000)?doubleNovalue:S_incident;
+		S_incident=(S_incident<=0)?doubleNovalue:S_incident;
 
-		return S_incident=(S_incident<=0)?doubleNovalue:S_incident;
+		return S_incident;
 	}
 
 
@@ -643,8 +646,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 		double I_dm = (In*sunVector[2]+ I_dr + I_da) * alpha_a * pAlphag / (1.0 - pAlphag * alpha_a);
 
 		double diffuse = (I_dr + I_da + I_dm)* skyviewfactorWR.getSampleDouble(i, j, 0);
-
-		return diffuse=(diffuse<0)?doubleNovalue:diffuse;
+		
+		diffuse= (diffuse>3000)?doubleNovalue:diffuse;
+		diffuse=(diffuse<0)?doubleNovalue:diffuse;
+		
+		return diffuse;
 
 	}
 
