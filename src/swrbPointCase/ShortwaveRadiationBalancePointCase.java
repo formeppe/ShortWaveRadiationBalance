@@ -260,7 +260,8 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 			// starting from the shp file containing the stations, get the coordinate
 			//of each station
-			stationCoordinates = getCoordinate(inStations, fStationsid);}
+			stationCoordinates = getCoordinate(inStations, fStationsid);
+			}
 
 		//get the dimension of the DEM and the resolution
 		int height=demWR.getHeight();
@@ -269,12 +270,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 
 		//create the set of the coordinate of the station, so we can 
-		//iterate over the set
-		Set<Integer> stationCoordinatesIdSet = stationCoordinates.keySet();
-		Iterator<Integer> idIterator = stationCoordinatesIdSet.iterator();
-
+		//iterate over the set	
+		Iterator<Integer> idIterator = stationCoordinates.keySet().iterator();
+		
 		// trasform the list of idStation into an array
-		idStations= stationCoordinatesIdSet.toArray();
+		idStations= stationCoordinates.keySet().toArray();
 
 		// iterate over the list of the stations to detect their position in the
 		// map and their latitude
