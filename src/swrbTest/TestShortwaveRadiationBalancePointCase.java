@@ -31,6 +31,7 @@ import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import swrbPointCase.ShortwaveRadiationBalancePointCase;
 
 
+
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 
 /**
@@ -43,8 +44,8 @@ public class TestShortwaveRadiationBalancePointCase extends HMTestCase {
 
 	public TestShortwaveRadiationBalancePointCase() throws Exception {
 
-		String startDate = "2002-01-01 00:00";
-		String endDate = "2002-01-02 00:00";
+		String startDate = "2007-10-17 00:00" ;
+		String endDate = "2007-10-18 00:00";
 		int timeStepMinutes = 60;
 		String fId = "ID";
 
@@ -68,7 +69,7 @@ public class TestShortwaveRadiationBalancePointCase extends HMTestCase {
 		GridCoverage2D pit = DEMreader.outRaster;
 
 		OmsRasterReader SKYreader = new OmsRasterReader();
-		SKYreader.file = "resources/Input/sky.asc";
+		SKYreader.file = "resources/Input/skyview.asc";
 		SKYreader.fileNovalue = -9999.0;
 		SKYreader.geodataNovalue = Double.NaN;
 		SKYreader.process();
@@ -105,7 +106,7 @@ public class TestShortwaveRadiationBalancePointCase extends HMTestCase {
 		SWRBPoint.inDem = pit;
 		SWRBPoint.inSkyview = skyviewfactor;
 		SWRBPoint.tStartDate = startDate;
-		SWRBPoint.fStationsid = "int_1";
+		SWRBPoint.fStationsid = "cat";
 		SWRBPoint.doHourly= true;
 		SWRBPoint.pCmO3=0.6;
 		SWRBPoint.pAlphag=0.9;
