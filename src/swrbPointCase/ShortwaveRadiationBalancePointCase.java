@@ -211,7 +211,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	@Description("direct normal irradiance")
 	double In;
 
-	@Description("the hour of the consdiered day")
+	@Description("the hour of the consdired day")
 	double hour;
 
 	@Description("the sunrise in the considered day")
@@ -330,16 +330,16 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 			// calculate the direct radiation, during the daylight
 			double direct= (hour > (sunrise) && hour < (sunset))?
-					calcDirectRadiation(columnStation.get(i), rowStation.get(i), demWR, shadowWR, sunVector, 
+			calcDirectRadiation(columnStation.get(i), rowStation.get(i), demWR, shadowWR, sunVector, 
 							normalWR,E0,temperature, humidity):0;
 
-					//calculate the diffuse radiation, during the daylight
-					double diffuse =(hour > (sunrise) && hour < (sunset))?
-							calcDiffuseRadiation(sunVector, E0,columnStation.get(i), rowStation.get(i)):0;
+			//calculate the diffuse radiation, during the daylight
+			double diffuse =(hour > (sunrise) && hour < (sunset))?
+			calcDiffuseRadiation(sunVector, E0,columnStation.get(i), rowStation.get(i)):0;
 
-							// calculate the radiation at the top of the atmosphere, during the daylight
-							double topATM=(hour > (sunrise) && hour < (sunset))?
-									calcTopAtmosphere(E0, sunVector[2]):0;
+			// calculate the radiation at the top of the atmosphere, during the daylight
+			double topATM=(hour > (sunrise) && hour < (sunset))?
+			calcTopAtmosphere(E0, sunVector[2]):0;
 
 
 
@@ -423,8 +423,9 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	 * @return the double value of the hour angle
 	 */
 	private double getHourAngle(DateTime date, double latitude) {
-		int day = date.getDayOfYear();	
-		hour=(double)date.getMillisOfDay() / (1000 * 60 * 60);
+		int day = date.getDayOfYear();
+		
+		hour=(doHourly==true)? (double)date.getMillisOfDay() / (1000 * 60 * 60):12.5;
 
 		// (360 / 365.25) * (day - 79.436) is the number of the day 
 		double dayangb = Math.toRadians((360 / 365.25) * (day - 79.436));
