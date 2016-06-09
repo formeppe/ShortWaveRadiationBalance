@@ -605,6 +605,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 		// surfaces (by inclusion of cosinc)
 		In=0.9571*SOLARCTE*E0*(tau_r * tau_o * tau_g * tau_w * tau_a + beta_s);
 
+
 		double S_incident=In* cos_inc * shadowWR.getSampleDouble(i, j, 0);
 		
 		S_incident=(S_incident>3000)?0:S_incident;
