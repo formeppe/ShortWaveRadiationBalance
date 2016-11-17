@@ -46,14 +46,14 @@ public class TestShortwaveRadiationBalanceRasterCase {
 		String startDate = "2007-10-17 00:00" ;
 
 		OmsRasterReader demReader = new OmsRasterReader();
-		demReader.file = "resources/Input/DEM.asc";
+		demReader.file = "resources/Input/DEM_rid.asc";
 		demReader.fileNovalue = -9999.0;
 		demReader.geodataNovalue = Double.NaN;
 		demReader.process();
 		GridCoverage2D dem = demReader.outRaster;
 		
 		OmsRasterReader skyViewReader = new OmsRasterReader();
-		skyViewReader.file = "resources/Input/skyview.asc";
+		skyViewReader.file = "resources/Input/sky_rid.asc";
 		skyViewReader.fileNovalue = -9999.0;
 		skyViewReader.geodataNovalue = Double.NaN;
 		skyViewReader.process();
