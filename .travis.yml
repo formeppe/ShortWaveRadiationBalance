@@ -1,0 +1,27 @@
+language: java
+jdk:
+- oraclejdk8
+before_cache:
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+before_deploy:
+- export GRADLE_BUILD_DIR="build/libs"
+- export TAG=$(git describe --abbrev=0 --tags)
+- export MOD_TAG=${TAG#"v"}
+- export RELEASE_PKG_FILE="${GRADLE_BUILD_DIR}/ShortWaveRadiationBalance-${MOD_TAG}.jar"
+- echo "deploying $RELEASE_PKG_FILE to GitHub releases"
+- gradle -PprojVersion=$MOD_TAG build
+deploy:
+  provider: releases
+  api_key:
+    secure: gLI8rSU3Iz0TA6Z+XzrMlxlfcixNxrq7UkwpgPPqBByh77dLvZ0P3OEW8kxK+nqT6LcNUbwxcKn9MMEnJl8Zg5i267ESbQbL2fzjUH/fa2Gmjlv07LPbYeZBz7G6M9MGaoCpXzPaumvVFil0DsV9lX1nCx0Qu+yoaq9tTBqDi/nwRgd/ksZ9+ioOIokguBBaBAukMtY8eM0MxcWwOkdCPXPbgySOCYoQ/Exij5pqSyKH8GcsWOJ5gLsPdeW9XCjnFono0tPPK4hx4e+sQMcJGV8M/WNr8xT+Smbuzqo0sKepWoGl+vC4Kz5vom8nbqzD5hrewBbu1boxRrtlftdJY2z7+oIA/97jxI/ggdiD8X6PXq8mPo/pxgxgpKGDHMLxER5aihO5KD6ajVJrSL2bFOiYpkkwQXOIcz7a/WoGLlDSWlpJvozHZ48IlpPWNqPdbSpY1yOvw1Rx5w3SvR7ebknz3AM7XQQFOyklKXateN86N9hURpU792nthJNvDUBmntZv8j3WF5eXLrSCqKE0eSI2fWpFzse5sjuUw4sxBgqTUBvJQs2XRQM/1o9/x/sNd+0Ut443VH6caAnrWtEXlqi6BgUney5voZux2LiZb+1Z0WvyRelPOw/0Kk1H+XnwFS7E4IT07I9OC+mReHc4f6Qv1nKICX+HZhjytOucebM=
+  file: "${RELEASE_PKG_FILE}"
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
+    repo: geoframecomponents/ShortWaveRadiationBalance
