@@ -48,8 +48,8 @@ public class TestShortwaveRadiationBalancePointCase {
 		String fId = "ID";
 
 
-		String inPathToAirT ="resources/Input/temperature.csv";
-		String inPathToHumidity ="resources/Input/humidity.csv";
+		String inPathToAirT ="resources/Input/Temperature.csv";
+		String inPathToHumidity ="resources/Input/Humidity.csv";
 
 		OmsTimeSeriesIteratorReader airTReader = getTimeseriesReader(inPathToAirT, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader humidityReader = getTimeseriesReader(inPathToHumidity, fId, startDate, endDate, timeStepMinutes);
