@@ -60,14 +60,14 @@ public class TestShortwaveRadiationBalancePointCase {
 		SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
 		OmsRasterReader DEMreader = new OmsRasterReader();
-		DEMreader.file = "resources/Input/DEM.asc";
+		DEMreader.file = "resources/Input/DEM_rid.asc";
 		DEMreader.fileNovalue = -9999.0;
 		DEMreader.geodataNovalue = Double.NaN;
 		DEMreader.process();
 		GridCoverage2D pit = DEMreader.outRaster;
 
 		OmsRasterReader SKYreader = new OmsRasterReader();
-		SKYreader.file = "resources/Input/skyview.asc";
+		SKYreader.file = "resources/Input/sky_rid.asc";
 		SKYreader.fileNovalue = -9999.0;
 		SKYreader.geodataNovalue = Double.NaN;
 		SKYreader.process();
