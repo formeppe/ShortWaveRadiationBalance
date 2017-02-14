@@ -232,6 +232,11 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").withZone(DateTimeZone.UTC);
+	
+	WritableRaster normalWR;
+	int height;
+	int width;
+	double dx;
 
 
 	@Execute
@@ -250,6 +255,8 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 
 		// computing the reference system of the input DEM
 		CoordinateReferenceSystem sourceCRS = inDem.getCoordinateReferenceSystem2D();
+		
+
 
 		if(step==0){
 			// transform the GrifCoverage2D maps into writable rasters
@@ -259,12 +266,17 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 			// starting from the shp file containing the stations, get the coordinate
 			//of each station
 			stationCoordinates = getCoordinate(inStations, fStationsid);
+			
+			//get the dimension of the DEM and the resolution
+			height=demWR.getHeight();
+			width=demWR.getWidth();
+			dx = CoverageUtilities.getRegionParamsFromGridCoverage(inDem).get(CoverageUtilities.XRES);
+		
+			// compute the vector normal to a grid cell surface.
+			normalWR = normalVector(demWR, dx);
 		}
 
-		//get the dimension of the DEM and the resolution
-		int height=demWR.getHeight();
-		int width=demWR.getWidth();
-		double dx = CoverageUtilities.getRegionParamsFromGridCoverage(inDem).get(CoverageUtilities.XRES);
+
 
 
 		//create the set of the coordinate of the station, so we can 
@@ -322,8 +334,7 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 			//evaluate the shadow map
 			WritableRaster shadowWR = calculateFactor(height, width, sunVector, inverseSunVector, normalSunVector, demWR, dx);
 
-			// compute the vector normal to a grid cell surface.
-			WritableRaster normalWR = normalVector(demWR, dx);
+
 
 
 			// calculate the direct radiation, during the daylight
