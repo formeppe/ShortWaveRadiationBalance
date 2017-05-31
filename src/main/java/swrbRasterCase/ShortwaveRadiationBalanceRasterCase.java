@@ -29,11 +29,9 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import java.util.LinkedHashMap;
+
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import javax.media.jai.RasterFactory;
@@ -57,16 +55,11 @@ import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.DirectPosition2D;
+
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
-import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
-import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
+
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -75,13 +68,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 @Description("Calculate the amount of beam and diffuse shortwave radiation .")
@@ -114,17 +103,17 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 	@In
 	public GridCoverage2D inDem;
 	WritableRaster demWR;
-	
+
 	@Description("The map of the skyview factor")
 	@In
 	public GridCoverage2D inSkyview;
 	WritableRaster skyviewfactorWR;
-	
+
 	@Description("doHourly allows to chose between the hourly time step"
 			+ " or the daily time step. It could be: "
 			+ " Hourly--> true or Daily-->false")
 	@In
-    public boolean doHourly;
+	public boolean doHourly;
 
 	@Description("It is needed to iterate on the date")
 	int step;
@@ -172,7 +161,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 
 	@Description("List of the latitudes of the station ")
 	ArrayList <Double> latitudeStation= new ArrayList <Double>();
-	
+
 	@Description("relative air mass")
 	double ma;
 
@@ -202,7 +191,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 
 	@Description("the sunrise in the considered day")
 	double sunset;
-	
+
 	@Description("The output direct radiation map")
 	@Out
 	public GridCoverage2D outDirectGrid;
@@ -210,12 +199,24 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 	@Description("The output diffuse radiation map")
 	@Out
 	public GridCoverage2D outDiffuseGrid;
-	
+
 	@Description("The output top atmosphere map")
 	@Out
 	public GridCoverage2D outTopATMGrid;
 	
-	
+	@Description("The output top atmosphere map")
+	@Out
+	public GridCoverage2D totalGrid;
+
+	WritableRaster normalWR;
+	WritableRaster temperatureMap;
+	WritableRaster humidityMap;
+	int cols;
+	int rows;
+	double dx;
+	RegionMap regionMap;
+
+
 
 	@Execute
 	public void process() throws Exception {
@@ -230,25 +231,34 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 		// computing the reference system of the input DEM
 		CoordinateReferenceSystem sourceCRS = inDem.getCoordinateReferenceSystem2D();
 
-		// transform the GrifCoverage2D maps into writable rasters
-		WritableRaster temperatureMap=mapsReader(inTempGrid);	
-		WritableRaster humidityMap=mapsReader(inHumidityGrid);
-		demWR=mapsReader(inDem);
-		
-		// get the dimension of the maps
-		RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
-		int cols = regionMap.getCols();
-		int rows = regionMap.getRows();
-		double dx=regionMap.getXres();
-		
+
+		if(step==0){
+			// transform the GrifCoverage2D maps into writable rasters
+			temperatureMap=mapsTransform(inTempGrid);	
+			if (humidityMap!= null) humidityMap=mapsTransform(inHumidityGrid);
+			demWR=mapsTransform(inDem);
+			skyviewfactorWR=mapsTransform(inSkyview);
+
+			// get the dimension of the maps
+			regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+			cols = regionMap.getCols();
+			rows = regionMap.getRows();
+			dx=regionMap.getXres();
+
+			// compute the vector normal to a grid cell surface.
+			normalWR = normalVector(demWR, dx);
+		}
+
 
 		WritableRaster outDiffuseWritableRaster = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
 		WritableRaster outDirectWritableRaster =CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null); 
 		WritableRaster outTopATMWritableRaster =CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null); 
+		WritableRaster totalWritableRaster =CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null); 
 
 		WritableRandomIter diffuseIter = RandomIterFactory.createWritable(outDiffuseWritableRaster, null);       
 		WritableRandomIter directIter = RandomIterFactory.createWritable(outDirectWritableRaster, null);		
-		WritableRandomIter topIter = RandomIterFactory.createWritable(outTopATMWritableRaster, null);       
+		WritableRandomIter topIter = RandomIterFactory.createWritable(outTopATMWritableRaster, null);  
+		WritableRandomIter totalIter = RandomIterFactory.createWritable(totalWritableRaster, null); 
 
 
 		// get the geometry of the maps and the coordinates of the stations
@@ -262,6 +272,9 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 
 				// get the exact value of the variable in the pixel i, j 
 				temperature=temperatureMap.getSampleDouble(c, r, 0);
+				
+				humidity=pRH;
+				if (humidityMap!= null)
 				humidity=humidityMap.getSampleDouble(c, r, 0);
 				if(isNovalue(humidity)) humidity=pRH;
 
@@ -283,33 +296,35 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 
 				//E0 is the correction factor related to Earth’s orbit eccentricity computed according to Spencer (1971):
 				double E0=computeE0(date);
-				
+
 				//evaluate the shadow map
 				WritableRaster shadowWR = calculateFactor(rows,cols,  sunVector, inverseSunVector, normalSunVector, demWR, dx);
 
-				// compute the vector normal to a grid cell surface.
-				WritableRaster normalWR = normalVector(demWR, dx);
-				
+
 
 				// calculate the direct radiation, during the daylight
 				double direct= (hour > (sunrise) && hour < (sunset))?
 						calcDirectRadiation(c, r, demWR, shadowWR, sunVector, normalWR,E0,temperature, humidity):0;
 
-				//calculate the diffuse radiation, during the daylight
-				double diffuse =(hour > (sunrise) && hour < (sunset))?
+						//calculate the diffuse radiation, during the daylight
+						double diffuse =(hour > (sunrise) && hour < (sunset))?
 								calcDiffuseRadiation(sunVector, E0,c, r):0;
 
-				// calculate the radiation at the top of the atmosphere, during the daylight
-				double topATM=(hour > (sunrise) && hour < (sunset))?
-								calcTopAtmosphere(E0, sunVector[2]):0;
-								
-								
-				diffuseIter.setSample(c, r, 0,direct);
-				directIter.setSample(c, r, 0, diffuse);
-				topIter.setSample(c, r, 0, topATM);
+								// calculate the radiation at the top of the atmosphere, during the daylight
+								double topATM=(hour > (sunrise) && hour < (sunset))?
+										calcTopAtmosphere(E0, sunVector[2]):0;
 
-				// the index k is for the loop over the list
-				k++;
+										double total=(hour > (sunrise) && hour < (sunset))?
+												direct+diffuse:0;
+
+
+										diffuseIter.setSample(c, r, 0,direct);
+										directIter.setSample(c, r, 0, diffuse);
+										topIter.setSample(c, r, 0, topATM);
+										totalIter.setSample(c, r, 0, total);
+
+										// the index k is for the loop over the list
+										k++;
 
 
 			}
@@ -318,13 +333,18 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 		CoverageUtilities.setNovalueBorder(outDirectWritableRaster);
 		CoverageUtilities.setNovalueBorder(outDiffuseWritableRaster);	
 		CoverageUtilities.setNovalueBorder(outTopATMWritableRaster);
+		CoverageUtilities.setNovalueBorder(totalWritableRaster);
+		
 
 		outDirectGrid = CoverageUtilities.buildCoverage("Direct", outDirectWritableRaster, 
 				regionMap, inDem.getCoordinateReferenceSystem());
 		outDiffuseGrid= CoverageUtilities.buildCoverage("Diffuse", outDiffuseWritableRaster, 
 				regionMap, inDem.getCoordinateReferenceSystem());
-		
+
 		outTopATMGrid= CoverageUtilities.buildCoverage("topATM", outTopATMWritableRaster, 
+				regionMap, inDem.getCoordinateReferenceSystem());
+		
+		totalGrid= CoverageUtilities.buildCoverage("total", totalWritableRaster, 
 				regionMap, inDem.getCoordinateReferenceSystem());
 
 		// upgrade the step for the new date
@@ -339,7 +359,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 	 * @param inValues: the input map values
 	 * @return the writable raster of the given map
 	 */
-	private WritableRaster mapsReader ( GridCoverage2D inValues){	
+	private WritableRaster mapsTransform  ( GridCoverage2D inValues){	
 		RenderedImage inValuesRenderedImage = inValues.getRenderedImage();
 		WritableRaster inValuesWR = CoverageUtilities.replaceNovalue(inValuesRenderedImage, -9999.0);
 		inValuesRenderedImage = null;
@@ -410,7 +430,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 				* Math.sin(k) + 0.000719 * Math.cos(2 * k) + 0.000077
 				* Math.sin(2 * k);
 	}
-	
+
 	/**
 	 * getHourAngle is the value of the hour angle at a given time and latitude (Corripio (2003))
 	 * 
@@ -421,7 +441,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 	 */
 	private double getHourAngle(DateTime date, double latitude) {
 		int day = date.getDayOfYear();	
-		hour=(double)date.getMillisOfDay() / (1000 * 60 * 60);
+		hour=(doHourly==true)? (double)date.getMillisOfDay() / (1000 * 60 * 60):12.5;
 
 		// (360 / 365.25) * (day - 79.436) is the number of the day 
 		double dayangb = Math.toRadians((360 / 365.25) * (day - 79.436));
@@ -446,7 +466,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 		return hourangle;
 
 	}
-	
+
 	/**
 	 * calcSunVector compute the vector vector in the direction of the Sun (Corripio (2003))
 	 *
@@ -464,7 +484,7 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 		return sunVector;
 
 	}
-	
+
 	/**
 	 * normalVector compute the vector normal to a grid cell surface, according to Corripio (2003)
 	 *
@@ -588,7 +608,10 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 
 		double S_incident=In* cos_inc * shadowWR.getSampleDouble(i, j, 0);
 
-		return S_incident=(S_incident<=0)?doubleNovalue:S_incident;
+		S_incident=(S_incident>3000)?0:S_incident;
+		S_incident=(S_incident<=0)?0:S_incident;
+		
+		return S_incident;
 	}
 
 
@@ -626,7 +649,10 @@ public class ShortwaveRadiationBalanceRasterCase extends JGTModel {
 
 		double diffuse = (I_dr + I_da + I_dm)* skyviewfactorWR.getSampleDouble(i, j, 0);
 
-		return diffuse=(diffuse<0)?doubleNovalue:diffuse;
+		diffuse= (diffuse>3000)?0:diffuse;
+		diffuse=(diffuse<0)?0:diffuse;
+
+		return diffuse;
 
 	}
 

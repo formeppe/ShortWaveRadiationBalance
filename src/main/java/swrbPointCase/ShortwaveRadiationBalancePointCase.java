@@ -229,6 +229,10 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	@Description("the output hashmap withe the top atmosphere radiation")
 	@Out
 	public HashMap<Integer, double[]> outHMtopatm= new HashMap<Integer, double[]>();
+	
+	@Description("the output hashmap withe the top atmosphere radiation")
+	@Out
+	public HashMap<Integer, double[]> outHMtotal= new HashMap<Integer, double[]>();
 
 
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").withZone(DateTimeZone.UTC);
@@ -349,10 +353,14 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 							// calculate the radiation at the top of the atmosphere, during the daylight
 							double topATM=(hour > (sunrise) && hour < (sunset))?
 									calcTopAtmosphere(E0, sunVector[2]):0;
+									
+									// calculate the radiation at the top of the atmosphere, during the daylight
+									double total=(hour > (sunrise) && hour < (sunset))?
+											direct+diffuse:0;
 
 
 
-									storeResult_series((Integer)idStations[i], direct, diffuse, topATM);
+									storeResult_series((Integer)idStations[i], direct, diffuse, topATM,total);
 
 		}
 
@@ -687,12 +695,14 @@ public class ShortwaveRadiationBalancePointCase extends JGTModel {
 	 * @throws SchemaException 
 	 */
 	private void storeResult_series(int ID, double direct , double diffuse,
-			double topATM) throws SchemaException {
+			double topATM, double total) throws SchemaException {
 		outHMdirect.put(ID, new double[]{direct});
 
 		outHMdiffuse.put(ID, new double[]{diffuse});
 
 		outHMtopatm.put(ID, new double[]{topATM});
+		
+		outHMtotal.put(ID, new double[]{total});
 	}
 
 }

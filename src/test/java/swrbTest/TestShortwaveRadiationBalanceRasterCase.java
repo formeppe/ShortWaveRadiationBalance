@@ -29,7 +29,6 @@ import swrbRasterCase.ShortwaveRadiationBalanceRasterCase;
 import org.junit.Test;
 
 /**
- * Test the {@link Insolation} module.
  * 
  * @author Marialaura Bancheri
  */
@@ -39,11 +38,12 @@ public class TestShortwaveRadiationBalanceRasterCase {
 	GridCoverage2D outDirectDataGrid = null;
 	GridCoverage2D outDiffuseDataGrid = null;
 	GridCoverage2D outTopATMDataGrid = null;
+	GridCoverage2D totalDataGrid = null;
 
 	@Test
 	public void Test() throws Exception {
 
-		String startDate = "2007-10-17 00:00" ;
+		String startDate = "2007-10-17 15:00" ;
 
 		OmsRasterReader demReader = new OmsRasterReader();
 		demReader.file = "resources/Input/DEM_rid.asc";
@@ -60,12 +60,18 @@ public class TestShortwaveRadiationBalanceRasterCase {
 		GridCoverage2D skyView = skyViewReader.outRaster;
 		
 		
+		OmsRasterReader airTReader = new OmsRasterReader();
+		airTReader.file = "resources/Input/airT.asc";
+		airTReader.fileNovalue = -9999.0;
+		airTReader.geodataNovalue = Double.NaN;
+		airTReader.process();
+		GridCoverage2D airT = airTReader.outRaster;
+		
 		ShortwaveRadiationBalanceRasterCase SWRBRaster = new ShortwaveRadiationBalanceRasterCase();
 
 		SWRBRaster.inDem = dem;
 		SWRBRaster.inSkyview = skyView;
-		SWRBRaster.inTempGrid=dem;
-		SWRBRaster.inHumidityGrid=dem;
+		SWRBRaster.inTempGrid= airT;
 		SWRBRaster.tStartDate = startDate;
 		SWRBRaster.doHourly=true;
 		SWRBRaster.pCmO3=0.6;
@@ -77,6 +83,7 @@ public class TestShortwaveRadiationBalanceRasterCase {
 		outDirectDataGrid  = SWRBRaster.outDirectGrid;
 		outDiffuseDataGrid  = SWRBRaster.outDiffuseGrid;
 		outTopATMDataGrid =SWRBRaster.outTopATMGrid;
+		totalDataGrid =SWRBRaster.totalGrid;
 
 		OmsRasterWriter writerDIrectraster = new OmsRasterWriter();
 		writerDIrectraster .inRaster = outDirectDataGrid;
@@ -92,6 +99,11 @@ public class TestShortwaveRadiationBalanceRasterCase {
 		writerTopATMraster.inRaster = outTopATMDataGrid;
 		writerTopATMraster.file = "resources/Output/mapTop.asc";
 		writerTopATMraster.process();
+		
+		OmsRasterWriter writerTotalraster = new OmsRasterWriter();
+		writerTotalraster.inRaster = totalDataGrid;
+		writerTotalraster.file = "resources/Output/mapTotal.asc";
+		writerTotalraster.process();
 
 
 	}
