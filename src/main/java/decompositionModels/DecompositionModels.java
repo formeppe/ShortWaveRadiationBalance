@@ -18,7 +18,6 @@
  */
 package decompositionModels;
 
-
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 
 import java.util.HashMap;
@@ -52,7 +51,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
  */
 @Description("Cmputes the shortwave accounting for the cloudness")
 @Documentation("")
-@Author(name = "Marialaura Bancheri, Giuseppe Formetta", contact = "maryban@hotmail.it")
+@Author(name = "Giuseppe Formetta, Marialaura Bancheri", contact = "giuseppe.formetta@unitn.it")
 @Keywords("Hydrology, Radiation, SkyviewFactor, Hillshade")
 @Bibliography("Formetta (2013)")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
@@ -60,139 +59,140 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class DecompositionModels extends JGTModel {
-	
+
 	@Description("Clearness index input Hashmap")
 	@In
-	@Unit ("-")
+	@Unit("-")
 	public HashMap<Integer, double[]> inClearnessIndexValues;
-	
+
 	@Description("The Hashmap with the time series of the SWRB meadured values")
 	@In
-	@Unit ("W/m2")
+	@Unit("W/m2")
 	public HashMap<Integer, double[]> inSWRBMeasuredValues;
-	
 
 	@Description("The Hashmap with the time series of the direct shortwave radiation values")
 	@In
-	@Unit ("W/m2")
+	@Unit("W/m2")
 	public HashMap<Integer, double[]> inSWRBDirectValues;
 
 	@Description("The Hashmap with the time series of the diffuse shortwave radiation values")
 	@In
-	@Unit ("W/m2")
+	@Unit("W/m2")
 	public HashMap<Integer, double[]> inSWRBDiffuseValues;
-	
 
-	@Description("String containing the name of the model: "
-			+ " Erbs; Reindl;Boland")
+	@Description("String containing the name of the model: " + " Erbs; Reindl;Boland")
 	@In
 	public String model;
-	
 
 	Model DecMod;
-	
 
 	@Description("The output downwelling Hashmap")
 	@Out
-	public HashMap<Integer, double[]> outHMSWRBallSky= new HashMap<Integer, double[]>();;
-	
+	public HashMap<Integer, double[]> outHMSWRBallSky = new HashMap<Integer, double[]>();;
+
 	/**
 	 * Process.
 	 *
 	 * @throws Exception the exception
 	 */
 	@Execute
-	public void process() throws Exception { 
-		
+	public void process() throws Exception {
+
 		checkNull(inSWRBDirectValues);
 
-
-		// reading the ID of all the stations 
+		// reading the ID of all the stations
 		Set<Entry<Integer, double[]>> entrySet = inSWRBDirectValues.entrySet();
 
 		for (Entry<Integer, double[]> entry : entrySet) {
-				
+
 			Integer ID = entry.getKey();
-			
-			double SWRBMeasured=inSWRBMeasuredValues.get(ID)[0];
-			if (isNovalue(SWRBMeasured)) SWRBMeasured = 0;
+
+			double SWRBMeasured = inSWRBMeasuredValues.get(ID)[0];
 
 			double clearnessIndex = inClearnessIndexValues.get(ID)[0];
-			if (isNovalue(clearnessIndex )) clearnessIndex = 1;
-			
-			double SWRBdirect=inSWRBDirectValues.get(ID)[0];
-			if(SWRBdirect<0) SWRBdirect=0;
-			
-			double SWRBdiffuse=inSWRBDiffuseValues.get(ID)[0];
-			if(SWRBdiffuse<0) SWRBdiffuse=0;
-			
-			double kd=computeKd(model,clearnessIndex);
-			
-			double cs=(SWRBdirect==0)?0:computeCs(kd,SWRBMeasured,SWRBdirect);
-			
-			double cd=(SWRBdiffuse==0)?0:computeCd(kd,SWRBMeasured,SWRBdiffuse);
-			
-			double SWRBallSky=cd*SWRBdirect+cs*SWRBdiffuse;
-			
-			/**Store results in Hashmaps*/
-			storeResult((Integer)ID,SWRBallSky);
-			
+
+			if (isNovalue(clearnessIndex))
+				clearnessIndex = 1;
+
+			double SWRBdirect = inSWRBDirectValues.get(ID)[0];
+			if (SWRBdirect < 0)
+				SWRBdirect = 0;
+
+			double SWRBdiffuse = inSWRBDiffuseValues.get(ID)[0];
+			if (SWRBdiffuse < 0)
+				SWRBdiffuse = 0;
+
+			double SWRBallSky = 1. * SWRBdirect + 1. * SWRBdiffuse;
+
+			if (!isNovalue(SWRBMeasured) & SWRBMeasured>0.) {
+
+				double kd = computeKd(model, clearnessIndex);
+
+				double cs = (SWRBdirect == 0) ? 0 : computeCs(kd, SWRBMeasured, SWRBdirect);
+
+				double cd = (SWRBdiffuse == 0) ? 0 : computeCd(kd, SWRBMeasured, SWRBdiffuse);
+
+				SWRBallSky = cd * SWRBdirect + cs * SWRBdiffuse;
+			}
+
+			/** Store results in Hashmaps */
+			storeResult((Integer) ID, SWRBallSky);
+
 		}
-		
+
 	}
-
-
 
 	/**
-	 * Compute kd which is the diffuse sky fraction coefficient (see also Helbig et al.2010).
+	 * Compute kd which is the diffuse sky fraction coefficient (see also Helbig et
+	 * al.2010).
 	 *
-	 * @param model is the string containing the decomposition model
+	 * @param model          is the string containing the decomposition model
 	 * @param clearnessIndex the clearness index value
-	 * @return the double variable of the diffuse sky fraction coefficient 
+	 * @return the double variable of the diffuse sky fraction coefficient
 	 */
-	private double computeKd(String model,double clearnessIndex) {
-		DecMod=SimpleModelFactory.createModel(model,clearnessIndex);
-		double kd=DecMod.kdValues();
-		return kd=(kd>1)?1:kd;
+	private double computeKd(String model, double clearnessIndex) {
+		DecMod = SimpleModelFactory.createModel(model, clearnessIndex);
+		double kd = DecMod.kdValues();
+		return kd = (kd > 1) ? 1 : kd;
 	}
-	
+
 	/**
 	 * Compute cs which is the correction coefficient for the direct radiation.
 	 *
-	 * @param kd is the diffuse sky fraction coefficient 
+	 * @param kd           is the diffuse sky fraction coefficient
 	 * @param SWRBMeasured is the measured shortwave
-	 * @param SWRBdirect is the direct shortwave
-	 * @return the double value of the correction coefficient for the direct radiation
+	 * @param SWRBdirect   is the direct shortwave
+	 * @return the double value of the correction coefficient for the direct
+	 *         radiation
 	 */
 	private double computeCs(double kd, double SWRBMeasured, double SWRBdirect) {
-		return (1-kd)*SWRBMeasured/SWRBdirect;
+		return (1 - kd) * Math.min(1., SWRBMeasured / SWRBdirect);
 	}
-	
+
 	/**
 	 * Compute cd the correction coefficient for the diffuse radiation.
 	 *
-	 * @param kd is the diffuse sky fraction coefficient 
+	 * @param kd           is the diffuse sky fraction coefficient
 	 * @param SWRBMeasured is the measured shortwave
-	 * @param SWRBdiffuse is the diffuse shortwave
-	 * @return the double value of the correction coefficient for the diffuse radiation
+	 * @param SWRBdiffuse  is the diffuse shortwave
+	 * @return the double value of the correction coefficient for the diffuse
+	 *         radiation
 	 */
 	private double computeCd(double kd, double SWRBMeasured, double SWRBdiffuse) {
-		return kd*SWRBMeasured/SWRBdiffuse;
+
+		return kd * Math.min(1., SWRBMeasured / SWRBdiffuse);
 	}
 
-
-	
 	/**
 	 * Store result.
 	 *
-	 * @param ID the id of the station
+	 * @param ID         the id of the station
 	 * @param SWRBallSky the SWRB computed at all sky conditions
 	 * @throws SchemaException the schema exception
 	 */
-	private void storeResult(int ID,double SWRBallSky) 
-			throws SchemaException {
+	private void storeResult(int ID, double SWRBallSky) throws SchemaException {
 
-		outHMSWRBallSky.put(ID, new double[]{SWRBallSky});
+		outHMSWRBallSky.put(ID, new double[] { SWRBallSky });
 	}
 
 }
